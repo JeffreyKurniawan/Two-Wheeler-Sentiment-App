@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import io
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import time
 import re
 import plotly.express as px
@@ -10,11 +10,13 @@ from collections import Counter
 
 # Jalan ini di terminal 2 : streamlit run app.py 
 st.set_page_config(page_title="Astra Honda Sentiment Analysis", layout="wide")
-api_url = "http://127.0.0.1:8000/predict" 
 
 @st.cache_resource
-def load_tokenizer():
-    return AutoTokenizer.from_pretrained("indobenchmark/indobert-base-p1")
+def load_huggingface_model():
+    model_name = "Jeka11/indobert-honda-sentiment"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name)
+    return tokenizer, model
 
 @st.cache_data
 def load_kamus():
@@ -24,8 +26,6 @@ def load_kamus():
         return dict(zip(kamus_data['tidak_baku'], kamus_data['kata_baku']))
     except:
         return {}
-
-tokenizer = load_tokenizer()
 kamus_tidak_baku_dict = load_kamus()
 
 custom_topic = {
