@@ -10,7 +10,7 @@ app = FastAPI(
     version="2.0.0"
 )
 
-MODEL_PATH = "./model_indobert_final"
+MODEL_PATH = "Jeka11/indobert-honda-sentiment"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 try:
@@ -67,4 +67,5 @@ def root():
     return {"message": "IndoBERT Sentiment API is running!"}
 
 # if __name__ == "__main__":
+
 #     uvicorn.run(app, host="0.0.0.0", port=8000)
