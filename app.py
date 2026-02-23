@@ -17,7 +17,7 @@ def load_huggingface_model():
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
     return tokenizer, model
-
+tokenizer, model = load_huggingface_model()
 @st.cache_data
 def load_kamus():
     try:
@@ -575,3 +575,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
