@@ -4,6 +4,7 @@ import requests
 import io
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import time
+import torch
 import re
 import plotly.express as px
 from collections import Counter
@@ -184,15 +185,39 @@ def classify_segment(text, topic_dict):
 
 def make_prediction(text_input):
     try:
-        response = requests.post(api_url, json={"text": str(text_input)})
-        
-        if response.status_code == 200:
-            return response.json() 
-        else:
-            return {"prediction": "Error", "confidence": 0.0}
+        # Preprocessing menggunakan tokenizer dari Hugging Face
+        inputs = tokenizer(
+            str(text_input), 
+            return_tensors="pt", 
+            truncation=True, 
+            padding=True, 
+            max_length=512
+        )
+
+        # Inference menggunakan model secara langsung
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits
+            
+            # Hitung probabilitas menggunakan softmax
+            probs = torch.nn.functional.softmax(logits, dim=1)
+            pred_label_idx = torch.argmax(probs, dim=1).item()
+            confidence = probs[0][pred_label_idx].item()
+
+        # Dictionary label
+        id2label = {
+            0: "Negative",
+            1: "Neutral",
+            2: "Positive"
+        }
+
+        return {
+            "prediction": id2label.get(pred_label_idx, "Unknown"), 
+            "confidence": round(confidence, 4)
+        }
             
     except Exception as e:
-        return {"prediction": "Connection Error", "confidence": 0.0}
+        return {"prediction": "Error", "confidence": 0.0}
     
 def get_top_words(text_series, top_n=10):   
     all_text = " ".join(text_series.astype(str).tolist()).lower()
@@ -575,4 +600,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
